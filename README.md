@@ -27,29 +27,21 @@ hpo-classification-agent/
   requirements.txt              Python dependencies
   hpo_terms_to_classify.csv     List of HPO IDs to process
   README.md                     This file
-  data/                         Created by user; holds hp.obo
-  results/                      Created at runtime; holds outputs
+  data/                         Created automatically; holds hp.obo
+  results/                      Created automatically; holds outputs
 ```
 
 ## Setup and run
 
 1. Clone or download this repository.
 
-2. Create the data and results folders, then download the HPO ontology:
-
-   ```
-   mkdir -p data results
-   wget -O data/hp.obo http://purl.obolibrary.org/obo/hp.obo
-   mv hpo_terms_to_classify.csv data/
-   ```
-
-3. Install Python dependencies:
+2. Install Python dependencies:
 
    ```
    pip install -r requirements.txt
    ```
 
-4. Set your OpenRouter API key as an environment variable. The script
+3. Set your OpenRouter API key as an environment variable. The script
    reads it from there so it never touches the source code:
 
    ```
@@ -62,11 +54,15 @@ hpo-classification-agent/
    $env:OPENROUTER_API_KEY="your-key-here"
    ```
 
-5. Run the pipeline:
+4. Run the pipeline:
 
    ```
    python main.py
    ```
+
+On the first run, the script automatically creates the `data/` and
+`results/` folders, downloads the HPO ontology (`hp.obo`, about 10 MB),
+and moves the input CSV into `data/`. No manual setup is required.
 
 Outputs land in `results/`:
 
