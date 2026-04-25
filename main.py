@@ -46,14 +46,28 @@ warnings.filterwarnings("ignore")
 
 # Detect whether we are running inside a CodeOcean capsule (paths are fixed
 # there) or on a local machine (paths are relative to this file).
-if os.path.isdir("/data") and os.path.isdir("/results"):
-    DATA_DIR = "/data"
-    RESULTS_DIR = "/results"
-else:
-    HERE = os.path.dirname(os.path.abspath(__file__))
-    DATA_DIR = os.path.join(HERE, "..", "data")
-    RESULTS_DIR = os.path.join(HERE, "..", "results")
-    os.makedirs(RESULTS_DIR, exist_ok=True)
+HERE = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(HERE, "data")
+RESULTS_DIR = os.path.join(HERE, "results")
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(RESULTS_DIR, exist_ok=True)
+
+# If the input CSV is at the repo root (where it ships from GitHub),
+# move it into data/ on first run.
+_root_csv = os.path.join(HERE, "hpo_terms_to_classify.csv")
+_data_csv = os.path.join(DATA_DIR, "hpo_terms_to_classify.csv")
+if os.path.exists(_root_csv) and not os.path.exists(_data_csv):
+    import shutil
+    shutil.move(_root_csv, _data_csv)
+    print(f"Moved input CSV into {DATA_DIR}/")
+
+# If the HPO ontology is missing, download it automatically.
+_obo_path = os.path.join(DATA_DIR, "hp.obo")
+if not os.path.exists(_obo_path):
+    import urllib.request
+    print("Downloading hp.obo from purl.obolibrary.org (about 10 MB)...")
+    urllib.request.urlretrieve("http://purl.obolibrary.org/obo/hp.obo", _obo_path)
+    print(f"Saved to {_obo_path}")
 
 INPUT_CSV_PATH = os.path.join(DATA_DIR, "hpo_terms_to_classify.csv")
 HPO_ONTOLOGY_PATH = os.path.join(DATA_DIR, "hp.obo")
