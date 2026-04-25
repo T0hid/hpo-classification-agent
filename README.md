@@ -31,7 +31,7 @@ hpo-classification-agent/
   results/                      Created at runtime; holds outputs
 ```
 
-## Setup and run (local or GitHub Codespaces)
+## Setup and run
 
 1. Clone or download this repository.
 
@@ -81,18 +81,6 @@ Outputs land in `results/`:
 |------|---------|---------|
 | `MODEL_NAME` | `openai/gpt-4o` | Any OpenRouter-compatible model id |
 | `NCBI_EMAIL` | `reproducibility@example.org` | Identifier sent to NCBI E-utilities |
-
-## How to run on Code Ocean
-
-If you are running this inside a Code Ocean capsule, the pipeline
-detects the standard `/data` and `/results` mount points automatically.
-
-1. Place `hp.obo` and `hpo_terms_to_classify.csv` in `/data`.
-2. Add `OPENROUTER_API_KEY` under the capsule's Environment Variables
-   (or Secrets, depending on the capsule type).
-3. Click **Reproducible Run**.
-
-The capsule executes `main.py` and writes outputs to `/results`.
 
 ## Note on the classification prompt
 
