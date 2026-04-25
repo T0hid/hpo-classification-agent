@@ -1,3 +1,11 @@
+## Setup
+
+1. Download the HPO ontology file from https://hpo.jax.org/data/ontology
+   and save it as data/hp.obo in this repository folder.
+2. Install Python dependencies: pip install -r requirements.txt
+3. Set your API key: export OPENROUTER_API_KEY="your-key-here"
+4. Run: python main.py
+
 # HPO Term Classification ReAct Agent
 
 Reproducibility build accompanying the manuscript submission.
