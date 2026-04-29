@@ -42,7 +42,6 @@ hpo-classification-agent/
   hyperparameter.py              Hyperparameter sensitivity heatmap
   visualization.py               Figures 4-9 + validation dashboard
   requirements.txt               Python dependencies
-  run.sh                         Convenience runner for all four scripts
   hpo_terms_to_classify.csv      Default input list of HPO IDs
   scripts/
     download_public_data.py      Fetches hp.obo from the HPO consortium
