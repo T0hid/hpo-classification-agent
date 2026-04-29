@@ -83,8 +83,7 @@ hpo-classification-agent/
 
 ## Running the pipeline
 
-Each script can be run independently, or all of them in sequence via `run.sh`:
-
+Each script can be run independently
 ```bash
 python main.py                       # produces the classification output + reasoning log
 python hyperparameter.py             # hyperparameter sensitivity heatmap
