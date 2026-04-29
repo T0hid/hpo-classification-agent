@@ -25,29 +25,10 @@ FREQ_LABEL_MAP = {
     'HP:0040285': 'Excluded (0%)        ← REMOVED',
 }
 
-# Month abbreviations → number, for un-corrupting Excel date strings
-MONTH_MAP = {
-    'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
-    'jul': 7, 'aug': 8, 'sep': 9, 'sept': 9, 'oct': 10, 'nov': 11, 'dec': 12,
-}
-
 
 def parse_fraction(val):
     """
     Convert frequency values to float in [0, 1].
-
-    Handles ALL of the following:
-      • Plain fractions:    '3/8', '4/4', '1/7'           → 0.375, 1.0, 0.143
-      • Percentages:        '75%'                          → 0.75
-      • Excel short dates:  '4-Feb', 'Feb-4', 'Mar-8'      → 2/4, 2/4, 3/8
-      • Excel full dates:   '3/8/2024', '4/2/2025'         → 3/8, 4/2
-      • pandas Timestamps:  Timestamp('2024-03-08')         → 3/8
-
-    Returns NaN for HPO IDs (HP:00402xx), NaN inputs, or anything unparseable.
-
-    EXCEL DATE LOGIC: When Excel auto-corrupts the fraction "n/d" it interprets
-    n as the month and d as the day. So '3/8' → March 8 → displayed as '8-Mar'
-    or '3/8/2024'. Either way we recover n/d as month/day.
     """
     if pd.isna(val):
         return np.nan
