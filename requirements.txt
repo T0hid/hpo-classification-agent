@@ -1,5 +1,0 @@
-pandas>=2.0
-pronto>=2.5
-requests>=2.31
-biopython>=1.83
-python-dotenv>=1.0.0
