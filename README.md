@@ -40,7 +40,7 @@ hpo-classification-agent/
   main.py                        Main classification pipeline (ReAct agent)
   severity_classification.py     Aggregate severity + MM / SF / CS comparison
   hyperparameter.py              Hyperparameter sensitivity heatmap
-  visualization.py               Figures 1-6 + validation dashboard
+  visualization.py               Figures 4-9 + validation dashboard
   requirements.txt               Python dependencies
   run.sh                         Convenience runner for all four scripts
   hpo_terms_to_classify.csv      Default input list of HPO IDs
@@ -90,7 +90,7 @@ Each script can be run independently, or all of them in sequence via `run.sh`:
 python main.py                       # produces the classification output + reasoning log
 python hyperparameter.py             # hyperparameter sensitivity heatmap
 python severity_classification.py    # aggregate severity + MM / SF / CS comparison
-python visualization.py              # Figures 1-6 + validation dashboard
+python visualization.py              # Figures 3-9 + validation dashboard
 ```
 
 `hyperparameter.py` and `severity_classification.py` run on the data already
