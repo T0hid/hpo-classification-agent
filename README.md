@@ -29,7 +29,7 @@ reproducibility.
 | Script | Purpose |
 |---|---|
 | **`main.py`** | Main classification ReAct agent. Wraps the LLM in a templated prompt that (1) retrieves rich HPO context — definition, synonyms, parents — from the local `hp.obo`, (2) maps the term to a MeSH descriptor via NCBI E-utilities, (3) generates targeted PubMed queries, (4) retrieves abstracts, (5) classifies the term per ACOG/ACMG-endorsed tier rules, and (6) runs an LLM-based **source-verification** loop that scores how well each `[Ref N]` claim is supported by its cited abstract. Runs on the supplied `hpo_terms_to_classify.csv`, or any HPO ID list you provide. |
-| **`visualization.py`** | Generates Figures 1–6 of the manuscript and the validation dashboard from the output of `main.py`. Computes accuracy, F1, MCC, kappa, PSI, and confusion matrices against the held-out ground-truth file. |
+| **`visualization.py`** | Generates Figures 3-9 of the manuscript and the validation dashboard from the output of `main.py`. Computes accuracy, F1, MCC, kappa, PSI, and confusion matrices against the held-out ground-truth file. |
 | **`hyperparameter.py`** | Hyperparameter sensitivity analysis. Renders the model × temperature accuracy / response-time heatmap. |
 | **`severity_classification.py`** | Computes the final per–gene-disease severity classification (Profound / Severe / Moderate / Mild) by aggregating tiers across phenotypes, applies a 30 % frequency filter, breaks results down by body system and mode of inheritance, and **compares against the ACMG carrier-screening (CS) list, the ACMG Secondary Findings (SF) list, and the Mackenzie's Mission (MM) reproductive-carrier panel**. |
 
