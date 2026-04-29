@@ -552,12 +552,6 @@ if __name__ == "__main__":
     if df_freq_filtered is None:
         print("\n❌ Cannot proceed without merged file. Exiting.")
         raise SystemExit(1)
-
-    # Save the filtered phenotype file for reference
-    filt_out = os.path.join(output_directory, 'merged_gene_disease_phenotype_freq_filtered.csv')
-    df_freq_filtered.to_csv(filt_out, index=False)
-    print(f"📝 Frequency-filtered file saved: {filt_out}\n")
-
     # --- Step 2: Part A — recompute severity from tiers ---------------------
     severity_data, nfc_count = run_severity_classification(df_freq_filtered, output_directory)
 
