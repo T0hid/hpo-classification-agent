@@ -12,10 +12,9 @@ guidelines** for reproductive carrier screening and genomic medicine.
 
 For every input HPO term, the agent produces:
 
-- A **classification tier** (1–4 / NFC) and category
-* A Quality of Life assessment (physical, emotional, cognitive, school functioning)
-* - A **management profile** (surgical, pharmacological, palliative, monitoring,
-  dietary, assistive, therapeutic support, or none)
+- A **classification tier** (1–4 or NFC) and category
+- A **Quality of Life assessment** across four domains (physical, emotional, cognitive, school functioning)
+- A **management profile** (surgical, pharmacological, palliative, monitoring, dietary, assistive, therapeutic support, or none)
 - A **structured reasoning trace** with `[Ref N]` citations to PubMed evidence
 - A **source-verification score** — every cited claim is fact-checked by an
   LLM judge against its source abstract and labelled `direct`,
