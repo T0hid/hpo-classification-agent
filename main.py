@@ -301,6 +301,13 @@ def extract_claims_from_reasoning(reasoning_json: Dict) -> List[str]:
             if isinstance(value, str):
                 potential_claims.extend(extract_from_text(value))
 
+    # New key (replaces severity_assessment): qol_assessment
+    qol_assessment = reasoning_json.get("qol_assessment", {})
+    if isinstance(qol_assessment, dict):
+        for value in qol_assessment.values():
+            if isinstance(value, str):
+                potential_claims.extend(extract_from_text(value))
+
     # Also check phenotype_definition and category_determination
     for section_key in ["phenotype_definition", "category_determination"]:
         section = reasoning_json.get(section_key, {})
@@ -808,9 +815,9 @@ def create_classification_prompt(context: ReActContext) -> str:
             "CRITICAL: You have severe amnesia for medical knowledge. You only know what is explicitly written in the provided 'retrieved_clinical_sources'.",
             "Base every factual statement STRICTLY and EXCLUSIVELY on the provided sources.",
             "If the provided sources do NOT explicitly discuss management or treatment, your 'management_summary' MUST be: 'Management not discussed in provided sources.' DO NOT invent a treatment plan.",
-            "If the provided sources do NOT contain enough information to make a definitive severity assessment, state 'Insufficient evidence in sources to determine severity.'",
+            "If the provided sources do NOT contain enough information to make a definitive QoL assessment, state 'Insufficient evidence in sources to determine QoL impact.'",
             "Attach a [Ref N] tag to every claim. The claim MUST be verifiable by reading the exact text of Ref N.",
-            "Assign exactly one classification category and one severity tier based ONLY on the evidence."
+            "Assign exactly one classification category and one QoL_assessment value (Affected or Not Affected) based ONLY on the evidence."
             ],
         
         "allowed_categories": [
@@ -832,7 +839,7 @@ def create_classification_prompt(context: ReActContext) -> str:
             "Out of Scope: Acquired/Multifactorial",
         ],
         "allowed_tiers": ["1", "2", "3", "4", "NFC"],
-        "allowed_severity_values": ["Severe", "Non-Severe"],
+        "allowed_qol_values": ["Affected", "Not Affected"],
         "required_output_format": {
             "reasoning": {
                 "preliminary_checks": {
@@ -854,9 +861,9 @@ def create_classification_prompt(context: ReActContext) -> str:
                     "primary_evidence": "string with [Ref N]",
                     "rationale": "string",
                 },
-                "severity_assessment": {
-                    "severity": "Severe or Non-Severe",
-                    "functional_severity_evidence": "string with [Ref N]",
+                "qol_assessment": {
+                    "qol_status": "Affected or Not Affected",
+                    "functional_qol_evidence": "string with [Ref N]",
                 },
                 "final_classification": {
                     "tier": "1 | 2 | 3 | 4 | NFC",
@@ -867,7 +874,7 @@ def create_classification_prompt(context: ReActContext) -> str:
             "classification": {
                 "tier": "<1-4 or NFC>",
                 "category": "<one of allowed_categories>",
-                "severity_assessment": "<Severe or Non-Severe>",
+                "QoL_assessment": "<Affected or Not Affected>",
             },
             "management_profile": {
                 "management_category": [
@@ -970,7 +977,7 @@ MANDATORY RULES:
             "classification": {
                 "tier": "NFC",
                 "category": "NFC (Not Further Classified)",
-                "severity_assessment": "Unknown",
+                "QoL_assessment": "Unknown",
             },
             "management_profile": {
                 "management_category": [],
@@ -1060,6 +1067,24 @@ def flatten_result(context: ReActContext) -> Dict[str, Any]:
     reasoning = (context.final_classification or {}).get("reasoning", "") \
         if isinstance(context.final_classification, dict) else {}
 
+    # Backward compatibility: if the LLM still emits the old key/values,
+    # migrate them onto the new QoL_assessment field.
+    if "QoL_assessment" not in classification and "severity_assessment" in classification:
+        old_val = classification.pop("severity_assessment")
+        if old_val == "Severe":
+            classification["QoL_assessment"] = "Affected"
+        elif old_val == "Non-Severe":
+            classification["QoL_assessment"] = "Not Affected"
+        else:
+            classification["QoL_assessment"] = old_val  # e.g. "Unknown", "N/A"
+
+    # Also migrate any stray "Severe" / "Non-Severe" string values that
+    # may have ended up in the new field.
+    if classification.get("QoL_assessment") == "Severe":
+        classification["QoL_assessment"] = "Affected"
+    elif classification.get("QoL_assessment") == "Non-Severe":
+        classification["QoL_assessment"] = "Not Affected"
+
     # Fix 1: enforce correct tier from category
     category = classification.get("category", "N/A")
     correct_tier = TIER_MAP.get(category)
@@ -1071,12 +1096,12 @@ def flatten_result(context: ReActContext) -> Dict[str, Any]:
     if "not discussed in provided sources" in mgmt_summary.lower():
         management["management_category"] = ["No Treatment Required"]
 
-    # Fix 3: surgical intervention forces Severe
+    # Fix 3: surgical intervention forces Affected
     mgmt_cats = management.get("management_category", [])
     if "Surgical Intervention" in mgmt_cats:
-        classification["severity_assessment"] = "Severe"
+        classification["QoL_assessment"] = "Affected"
 
-    # Fix 4: non-empty affected_domains forces Severe (mirrors main code rule)
+    # Fix 4: non-empty affected_domains forces Affected (mirrors main code rule)
     try:
         reasoning_obj = json.loads(reasoning) if isinstance(reasoning, str) else reasoning
         if isinstance(reasoning_obj, dict):
@@ -1086,12 +1111,12 @@ def flatten_result(context: ReActContext) -> Dict[str, Any]:
             if isinstance(affected, list) and any(
                 str(d).strip() for d in affected if d
             ):
-                classification["severity_assessment"] = "Severe"
+                classification["QoL_assessment"] = "Affected"
     except (json.JSONDecodeError, TypeError, AttributeError):
         pass
 
-    # Fix 5: re-derive tier from final severity
-    if classification.get("severity_assessment") == "Non-Severe":
+    # Fix 5: re-derive tier from final QoL status
+    if classification.get("QoL_assessment") == "Not Affected":
         classification["tier"] = "4"
     else:
         final_tier = TIER_MAP.get(category, "NFC")
@@ -1103,7 +1128,7 @@ def flatten_result(context: ReActContext) -> Dict[str, Any]:
         "mesh_term": context.mesh_term or "Not Found",
         "tier": classification.get("tier", "NFC"),
         "category": classification.get("category", "N/A"),
-        "severity_assessment": classification.get("severity_assessment", "N/A"),
+        "QoL_assessment": classification.get("QoL_assessment", "N/A"),
         "management_category": json.dumps(management.get("management_category", [])),
         "management_summary": management.get("management_summary", "N/A"),
         "pubmed_results_count": len(context.pubmed_articles),
@@ -1181,7 +1206,7 @@ def main() -> int:
                 flattened_rows.append({
                     "hpo_id": hpo_id, "hpo_name": "ERROR",
                     "mesh_term": "", "tier": "ERROR", "category": str(e),
-                    "severity_assessment": "ERROR",
+                    "QoL_assessment": "ERROR",
                     "management_category": "[]", "management_summary": "",
                     "pubmed_results_count": 0, "react_steps": 0,
                     "statement_support_score": 0.0, "supported_statements": 0,
