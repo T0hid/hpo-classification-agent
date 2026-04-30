@@ -44,7 +44,6 @@ def parse_fraction(val):
     if not val_str or val_str.lower() == 'nan' or val_str.startswith('HP:'):
         return np.nan
 
-    # --- Excel short-date format: '8-Mar', '8 Mar', 'Mar-8', 'Mar 8' ---
     # Pattern: day-monthAbbr  (e.g. '8-Mar' from fraction '3/8')
     m = re.match(r'^(\d{1,2})[-\s/]([A-Za-z]{3,4})\.?$', val_str)
     if m:
@@ -140,15 +139,12 @@ def load_and_filter_merged_file(merged_path):
         print("LOADING MERGED FILE & APPLYING FREQUENCY FILTER")
         print("=" * 80)
 
-        # Auto-detect file format from extension. Pickle preserves dtypes
-        # exactly so fractions like '3/8' can't be misread as dates.
+
         ext = os.path.splitext(merged_path)[1].lower()
         if ext == '.pkl':
             df = pd.read_pickle(merged_path)
         else:
-            # CSV path — force frequency/qualifier as string so pandas does
-            # not auto-parse Excel-corrupted date strings ('4-Feb', '3/8/2024')
-            # as datetimes. dtype dict is harmless if those cols don't exist.
+
             df = pd.read_csv(
                 merged_path,
                 low_memory=False,
@@ -168,7 +164,7 @@ def load_and_filter_merged_file(merged_path):
                     'classification_tier', 'Parent Term', 'frequency', 'qualifier']
         missing = [c for c in required if c not in df.columns]
         if missing:
-            print(f"❌ Missing required columns: {missing}")
+            print(f" Missing required columns: {missing}")
             return None
 
         # ---- Parse frequency, with Excel-date un-corruption built in ----
@@ -227,14 +223,14 @@ def load_and_filter_merged_file(merged_path):
         for cat, cnt in df_filtered['frequency_category'].value_counts().items():
             print(f"    {cnt:>7,}  {cat}")
 
-        print("\n✅ Frequency filter applied successfully.")
+        print("\n Frequency filter applied successfully.")
         return df_filtered
 
     except FileNotFoundError:
-        print(f"❌ Merged file not found: {merged_path}")
+        print(f" Merged file not found: {merged_path}")
         return None
     except Exception as e:
-        print(f"❌ Unexpected error in load/filter step: {e}")
+        print(f" Unexpected error in load/filter step: {e}")
         traceback.print_exc()
         return None
 
@@ -288,17 +284,17 @@ def run_severity_classification(df_input, output_dir):
         final_df = pd.merge(severity_df, tier_out, on=grouping_cols)
         out_path = os.path.join(output_dir, 'gene_severity_classification_excluding_nfc.csv')
         final_df.to_csv(out_path, index=False)
-        print(f"\n✅ Part A results saved to: {out_path}")
+        print(f"\n Part A results saved to: {out_path}")
 
         if len(nfc_only) > 0:
             ex_path = os.path.join(output_dir, 'excluded_nfc_only_cases.csv')
             nfc_only[grouping_cols].to_csv(ex_path, index=False)
-            print(f"📝 Excluded NFC-only cases saved to: {ex_path}")
+            print(f" Excluded NFC-only cases saved to: {ex_path}")
 
         return final_df, len(nfc_only)
 
     except Exception as e:
-        print(f"❌ Unexpected error in Part A: {e}")
+        print(f" Unexpected error in Part A: {e}")
         traceback.print_exc()
         return None, 0
 
@@ -334,7 +330,7 @@ def prepare_parent_term_data(severity_df, source_df):
         return crosstab_pct, crosstab
 
     except Exception as e:
-        print(f"❌ Unexpected error in Part B: {e}")
+        print(f" Unexpected error in Part B: {e}")
         traceback.print_exc()
         return None, None
 
@@ -371,7 +367,7 @@ def prepare_moi_data(source_df, severity_df):
         return cont_pct, cont
 
     except Exception as e:
-        print(f"❌ Unexpected error in Part C: {e}")
+        print(f" Unexpected error in Part C: {e}")
         traceback.print_exc()
         return None, None
 
@@ -392,7 +388,7 @@ def prepare_comparison_data(severity_df, mm_file, sf_file, cs_file, output_dir):
                 all_dists.append(d)
                 print("✓ MM dataset loaded")
         else:
-            print("⚠️  MM file not found — skipping")
+            print("  MM file not found — skipping")
 
         # SF
         if sf_file and os.path.exists(sf_file):
@@ -408,7 +404,7 @@ def prepare_comparison_data(severity_df, mm_file, sf_file, cs_file, output_dir):
             all_dists.append(d)
             print("✓ SF dataset processed")
         else:
-            print("⚠️  SF file not found — skipping")
+            print("  SF file not found — skipping")
 
         # CS
         if cs_file and os.path.exists(cs_file):
@@ -424,16 +420,16 @@ def prepare_comparison_data(severity_df, mm_file, sf_file, cs_file, output_dir):
             all_dists.append(d)
             print("✓ CS dataset processed")
         else:
-            print("⚠️  CS file not found — skipping")
+            print("  CS file not found — skipping")
 
         if not all_dists:
-            print("⚠️  No comparison datasets — skipping Plot D")
+            print("  No comparison datasets — skipping Plot D")
             return None
 
         return pd.concat(all_dists, ignore_index=True)
 
     except Exception as e:
-        print(f"❌ Unexpected error in Part D: {e}")
+        print(f" Unexpected error in Part D: {e}")
         traceback.print_exc()
         return None
 
@@ -444,7 +440,7 @@ def prepare_comparison_data(severity_df, mm_file, sf_file, cs_file, output_dir):
 
 def generate_comprehensive_report(output_dir, severity_data, parent_term_counts, nfc_excluded_count):
     try:
-        print("\n" + "=" * 80 + "\n📝 COMPREHENSIVE REPORT (A & B)\n" + "=" * 80)
+        print("\n" + "=" * 80 + "\n COMPREHENSIVE REPORT (A & B)\n" + "=" * 80)
         report_pct = parent_term_counts.div(parent_term_counts.sum(axis=1), axis=0) * 100
         rc  = f"COMPREHENSIVE SEVERITY ANALYSIS REPORT (WITH FREQUENCY FILTER)\n"
         rc += f"================================================================\n\n"
@@ -477,18 +473,18 @@ def generate_comprehensive_report(output_dir, severity_data, parent_term_counts,
             f.write(rc)
         print(f"✓ Saved: {path}")
     except Exception as e:
-        print(f"❌ Could not generate comprehensive report: {e}")
+        print(f" Could not generate comprehensive report: {e}")
         traceback.print_exc()
 
 
 def generate_moi_report(output_dir, contingency_pct, contingency):
     try:
-        print("\n" + "=" * 80 + "\n📝 MOI REPORT (C)\n" + "=" * 80)
+        print("\n" + "=" * 80 + "\n MOI REPORT (C)\n" + "=" * 80)
         lines = ["=" * 80,
                  "SEVERITY DISTRIBUTION SUMMARY BY MODE OF INHERITANCE (GROUPED)",
                  "(WITH FREQUENCY FILTER APPLIED)",
                  "=" * 80,
-                 "\n📈 Key Insights (% Profound):",
+                 "\n Key Insights (% Profound):",
                  "-" * 50]
         for moi in contingency_pct.index:
             lines.append(f"  • {moi:<25}: {contingency_pct.loc[moi, 'Profound']:.1f}% are Profound")
@@ -501,7 +497,7 @@ def generate_moi_report(output_dir, contingency_pct, contingency):
             f.write("\n".join(lines))
         print(f"✓ Saved: {path}")
     except Exception as e:
-        print(f"❌ Could not generate MOI report: {e}")
+        print(f" Could not generate MOI report: {e}")
         traceback.print_exc()
 
 
@@ -510,9 +506,7 @@ def generate_moi_report(output_dir, contingency_pct, contingency):
 # =============================================================================
 
 if __name__ == "__main__":
-    # --- File Paths (repo-relative) ---
-    # __file__ is the location of this script. We resolve everything
-    # relative to it, so the script runs from any working directory.
+
     SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
     REPO_ROOT  = SCRIPT_DIR  # adjust if the script lives in a sub-folder
 
@@ -525,32 +519,32 @@ if __name__ == "__main__":
     cs_file = os.path.join(REPO_ROOT, 'data', 'CS.xlsx')
 
     os.makedirs(output_directory, exist_ok=True)
-    print(f"📂 Output directory: {output_directory}")
-    print(f"📄 Input file:       {merged_input_file}\n")
+    print(f" Output directory: {output_directory}")
+    print(f" Input file:       {merged_input_file}\n")
 
     # --- Step 1: Load merged file + apply frequency filter -------------------
     df_freq_filtered = load_and_filter_merged_file(merged_input_file)
     if df_freq_filtered is None:
-        print("\n❌ Cannot proceed without merged file. Exiting.")
+        print("\n Cannot proceed without merged file. Exiting.")
         raise SystemExit(1)
     # --- Step 2: Part A — recompute severity from tiers ---------------------
     severity_data, nfc_count = run_severity_classification(df_freq_filtered, output_directory)
 
     if severity_data is None:
-        print("\n❌ Severity classification failed. Exiting.")
+        print("\n Severity classification failed. Exiting.")
         raise SystemExit(1)
 
     # --- Step 3: Part B — Parent Term analysis ------------------------------
     parent_term_pct, parent_term_count = prepare_parent_term_data(severity_data, df_freq_filtered)
 
-    # --- Step 4: Part C — MOI analysis (uses same merged DF) ----------------
+    # --- Step 4: Part C — MOI analysis ----------------
     moi_pct, moi_count = prepare_moi_data(df_freq_filtered, severity_data)
 
     # --- Step 5: Part D — Dataset comparison --------------------------------
     comparison_data = prepare_comparison_data(severity_data, mm_file, sf_file, cs_file, output_directory)
 
     # --- Step 6: Combined panel plot ----------------------------------------
-    print("\n" + "=" * 80 + "\n🎨 CREATING COMBINED VISUALIZATION PANEL\n" + "=" * 80)
+    print("\n" + "=" * 80 + "\n CREATING COMBINED VISUALIZATION PANEL\n" + "=" * 80)
     sns.set_style("whitegrid")
     fig, axes = plt.subplots(2, 2, figsize=(24, 18))
     fig.suptitle('Comprehensive Disease Severity Analysis (Frequency-Filtered)',
@@ -667,6 +661,6 @@ if __name__ == "__main__":
         generate_moi_report(output_directory, moi_pct, moi_count)
 
     print("\n" + "=" * 80)
-    print(f"✅ ALL DONE — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f" ALL DONE — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Outputs saved to: {output_directory}")
     print("=" * 80)
