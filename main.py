@@ -1,15 +1,6 @@
 """
 HPO Term Classification ReAct Agent (Reproducibility Build)
 ============================================================
-
-Companion code for the manuscript submission.
-
-This is a minimal, single-threaded build intended for reviewers and
-CodeOcean reproducibility checks. It removes the production caching
-and checkpoint layers and replaces the proprietary classification
-prompt with a structural template (see PROMPT_TEMPLATE_NOTE below).
-It also includes the LLM-based source verification step.
-
 Required environment variable:
     OPENROUTER_API_KEY   API key for the LLM endpoint (set as a
                          CodeOcean Secret, never committed to code).
