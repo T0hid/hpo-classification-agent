@@ -1238,7 +1238,7 @@ def main():
     # Guard: required input files
     if not os.path.exists(PREDICTED_FILE):
         print('=' * 70)
-        print('⚠️  Predictions file not found:')
+        print('  Predictions file not found:')
         print(f'     {PREDICTED_FILE}')
         print('\nClassified_terms.csv is the IP-protected output of main.py.')
         print('You can either:')
